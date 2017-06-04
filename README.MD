@@ -20,6 +20,7 @@ Make sure to update:
 	options = {
 		'api_key':'api_key',
 		'app_key':'app_key'
-	}```
-	
+	} 
+```
+
 to your API_KEY and APP_KEY
