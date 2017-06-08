@@ -32,32 +32,34 @@ def create_csv(fname):
     itr = None
     with open(fname, 'a+b') as outfile:
         writer = csv.writer(outfile)
-        for itr, item in enumerate(METRICS["Average_Metrics"]):
-            # Convert date to this format 09-05-2017 7:00:00 AM
-            target_date_time_ms = item[0]
-            base_datetime = datetime.datetime(1970, 1, 1)
-            delta = datetime.timedelta(0, 0, 0, target_date_time_ms)
-            target_date = base_datetime + delta
-            # Write the samples to CSV
-        writer.writerow([
-            target_date,
-            METRICS["HostID"],#ResourceID
-            METRICS["Service"],#Service
-            METRICS["Region"],#Region
-            METRICS["Availability_Zone"], #AZ
-            METRICS["Metric_Name"], #MetricName
-            METRICS["Unit"], #Unit
-            METRICS["NumberOfSamples"], #Samples
-            METRICS["Average_Metrics"][itr][1],#Avg
-            METRICS["Minimum_Metrics"][itr][1],#Min
-            METRICS["Maximum_Metrics"][itr][1],#Max
-            METRICS["AWS_Account"] # OwnerID
-            ])
+        for dic in Metric_List:
+            for itr in range(0, len(dic["Average_Metrics"])):
+            #for itr, met in enumerate(dic["Average_Metrics"]):
+                # Convert date to this format 09-05-2017 7:00:00 AM
+                target_date_time_ms = dic["Average_Metrics"][itr][0]
+                base_datetime = datetime.datetime(1970, 1, 1)
+                delta = datetime.timedelta(0, 0, 0, target_date_time_ms)
+                target_date = base_datetime + delta
+                # Write the samples to CSV
+                writer.writerow([
+                    target_date,
+                    dic["HostID"],#ResourceID
+                    dic["Service"],#Service
+                    dic["Region"],#Region
+                    dic["Availability_Zone"], #AZ
+                    dic["Metric_Name"], #MetricName
+                    dic["Unit"], #Unit
+                    dic["NumberOfSamples"], #Samples
+                    dic["Average_Metrics"][itr][1],#Avg
+                    dic["Minimum_Metrics"][itr][1],#Min
+                    dic["Maximum_Metrics"][itr][1],#Max
+                    dic["AWS_Account"] # OwnerID
+                    ])
 
 OPTIONS = {
     #Your API_KEY and APP_KEY, see https://app.datadoghq.com/account/settings#api
-    'api_key':'api_key',
-    'app_key':'app_key'
+    'api_key': '49591a0ddb33a31205c651acaf5bbe77',
+    'app_key': '57ac4012b4443748380fd9caddcc098e7a1e7008'
     }
 
 initialize(**OPTIONS)
@@ -65,15 +67,17 @@ initialize(**OPTIONS)
     #see your list here: https://app.datadoghq.com/metric/summary.
     #Select the host from which you want the data,
     #see here: https://app.datadoghq.com/infrastructure
-
-METRICS = {}
-AZONE = ""
-REGION = ""
-AWS_ACCOUNT = ""
+Metric_List = []
 METRIC_NAME = "aws.ec2.cpuutilization"
 TIMESTAMP = str(int(time.time()))
+filename = METRIC_NAME + "_" + TIMESTAMP + ".csv"
 HOSTS_ARR = gethosts("hosts:")
 for idx, host in enumerate(HOSTS_ARR):
+    METRICS = {}
+    AZONE = ""
+    REGION = ""
+    # default aws account, if account is a tag called aws_account we will use it instead
+    AWS_ACCOUNT = "287063015643"
     host_tags = api.Tag.get(host)
     for tag in host_tags["tags"]:
         if "region" in tag:
@@ -92,15 +96,13 @@ for idx, host in enumerate(HOSTS_ARR):
     cpu_avg_query = "avg:"+ METRIC_NAME +"{host:" + host + "}.rollup(avg, 3600)"
     cpu_max_query = "max:"+ METRIC_NAME +"{host:" + host + "}.rollup(max, 3600)"
     cpu_min_query = "min:"+ METRIC_NAME +"{host:" + host + "}.rollup(min, 3600)"
-    avg_metric_array = getmetric(cpu_avg_query)
-    max_metric_array = getmetric(cpu_max_query)
-    min_metric_array = getmetric(cpu_min_query)
-    filename = AWS_ACCOUNT + "_" + METRIC_NAME + "_" + TIMESTAMP + ".csv"
+    metric_array = getmetric(cpu_avg_query + "," + cpu_max_query + "," + cpu_min_query)
     if idx == 0:
         create_header_csv(filename)
-    if len(avg_metric_array["series"]) > 0:
-        METRICS['Average_Metrics'] = avg_metric_array['series'][0]["pointlist"]
-        METRICS['Maximum_Metrics'] = max_metric_array['series'][0]["pointlist"]
-        METRICS['Minimum_Metrics'] = min_metric_array['series'][0]["pointlist"]
-        METRICS["Unit"] = avg_metric_array["series"][0]["unit"][0]["name"]
-        create_csv(filename)
+    if len(metric_array["series"]) > 2:
+        METRICS['Average_Metrics'] = metric_array['series'][0]["pointlist"]
+        METRICS['Maximum_Metrics'] = metric_array['series'][1]["pointlist"]
+        METRICS['Minimum_Metrics'] = metric_array['series'][2]["pointlist"]
+        METRICS["Unit"] = metric_array["series"][0]["unit"][0]["name"]
+        Metric_List.append(METRICS)
+create_csv(filename)
