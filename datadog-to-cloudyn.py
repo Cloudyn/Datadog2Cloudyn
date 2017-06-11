@@ -34,7 +34,6 @@ def create_csv(fname, metrics):
 
         for dic in metrics:
             for itr in range(0, len(dic["Average_Metrics"])):
-            #for itr, met in enumerate(dic["Average_Metrics"]):
                 # Convert date to this format 09-05-2017 7:00:00 AM
                 target_date_time_ms = int(dic["Average_Metrics"][itr][0])/1000
                 target_date = datetime.datetime.utcfromtimestamp(target_date_time_ms)
