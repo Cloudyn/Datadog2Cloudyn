@@ -3,17 +3,18 @@
 import time
 import datetime
 import csv
-from datadog import initialize, api
 import json
 import sys
+from datadog import initialize, api
 
-def gethosts(query):
+
+def get_hosts(query):
     '''return array of hosts by query'''
     result = api.Infrastructure.search(q=query)
     hosts = result["results"]["hosts"]
     return hosts
 
-def getmetric(query):
+def get_metrics(query):
     '''Get metric array by query'''
     now = int(time.time())
     # we always ask for one hour rollup of samples, it might reault 2 samples per instance
@@ -78,7 +79,7 @@ if __name__ == "__main__":
     TIMESTAMP = str(int(time.time()))
     filename = METRIC_NAME + "_" + TIMESTAMP + ".csv"
     print "Getting hosts"
-    HOSTS_ARR = gethosts("hosts:")
+    HOSTS_ARR = get_hosts("hosts:")
     print "Hosts: %s" % HOSTS_ARR
 
     for host in HOSTS_ARR:
@@ -92,7 +93,7 @@ if __name__ == "__main__":
         cpu_max_query = "max:"+ METRIC_NAME +"{host:" + host + "}.rollup(max, 3600)"
         cpu_min_query = "min:"+ METRIC_NAME +"{host:" + host + "}.rollup(min, 3600)"
         print "Getting metrics"
-        metric_array = getmetric(cpu_avg_query + "," + cpu_max_query + "," + cpu_min_query)
+        metric_array = get_metrics(cpu_avg_query + "," + cpu_max_query + "," + cpu_min_query)
 
         if len(metric_array["series"]) > 2:
             print "Getting tags"
