@@ -6,7 +6,7 @@ As with any code, please test before using in production.
 
 ## Table of contents
 
-* [Datadog2Cloudyn](#Datadog2Cloudyn.py)
+* [Datadog2Cloudyn](Datadog2Cloudyn.py)
 
 ## Installation
 Install from pip:
