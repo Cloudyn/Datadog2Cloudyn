@@ -15,12 +15,10 @@ Install from pip:
 
 For more information see https://github.com/DataDog/datadogpy
 
-Make sure to update:
+Please note, API_KEY and APP_KEY are input parameters, use your API_KEY and APP_KEY
 ```python
-	options = {
-		'api_key':'api_key',
-		'app_key':'app_key'
-	} 
+	api_key = sys.argv[1]
+    	app_key = sys.argv[2]
+    	OPTIONS["api_key"] = api_key
+    	OPTIONS["app_key"] = app_key
 ```
-
-to your API_KEY and APP_KEY
