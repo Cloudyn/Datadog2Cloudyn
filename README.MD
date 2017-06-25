@@ -2,7 +2,8 @@
 
 Datadog Metric Collection Sample demonstrates integrating Datadog with Cloudyn for presenting metrics collected by Datadog in Cloudyn reports.
 In this sample we collect CPU utilization (Avg, Max, Min)
-As with any code, please test before using in production.
+As with any code, please test before using in production (Tested with Python 2.7).
+
 
 ## Table of contents
 
